@@ -31,6 +31,8 @@ class Slurm(AutotoolsPackage):
 
     license("GPL-2.0-or-later")
 
+    version("25-11-4-1", sha256="15f5a172812868349031d57104323f23d62f1c28537f21d1992c572dffdd93c2")
+    version("25-05-7-1", sha256="c2716a0e5bbc97e32088cac15227440e79162be15a1ab650ac9405c6452f7b25")
     version("25-05-1-1", sha256="b568c761a6c9d72358addb3bb585456e73e80a02214ce375d2de8534f9ddb585")
     version("24-11-6-1", sha256="282708483326f381eb001a14852a1a82e65e18f37b62b7a5f4936c0ed443b600")
     version(
@@ -75,6 +77,7 @@ class Slurm(AutotoolsPackage):
         default=False,
         description="Enable support for multiple slurmd instances",
     )
+    variant("lua", default=False, description="Enable Lua plugin support")
 
     # TODO: add variant for BG/Q and Cray support
 
@@ -83,8 +86,6 @@ class Slurm(AutotoolsPackage):
     # TODO: add variant for RRD (librrd) (slurm@23-02:)
 
     # TODO: add support for checkpoint/restart (BLCR)
-
-    # TODO: add support for lua
 
     depends_on("c", type="build")  # generated
 
@@ -113,6 +114,7 @@ class Slurm(AutotoolsPackage):
     depends_on("dbus", when="+cgroup")
     depends_on("linux-pam", when="+pam")
     depends_on("rocm-smi-lib", when="+rsmi")
+    depends_on("lua", when="+lua")
 
     executables = ["^srun$", "^salloc$"]
 
@@ -173,6 +175,9 @@ class Slurm(AutotoolsPackage):
 
         if spec.satisfies("+multiple_slurmd"):
             args.append("--enable-multiple-slurmd")
+
+        if spec.satisfies("+lua"):
+            args.append("--with-lua")
 
         sysconfdir = spec.variants["sysconfdir"].value
         if sysconfdir != "PREFIX/etc":
