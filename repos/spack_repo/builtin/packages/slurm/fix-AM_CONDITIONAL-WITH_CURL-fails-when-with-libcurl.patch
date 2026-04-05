@@ -1,0 +1,47 @@
+From 823af92ad3827a8a712c78199e9afe122cd65c58 Mon Sep 17 00:00:00 2001
+From: Brian McClune <brian.mcclune@proton.me>
+Date: Sat, 4 Apr 2026 19:26:17 -0400
+Subject: [PATCH] fix: AM_CONDITIONAL WITH_CURL fails when
+ --with-libcurl=PREFIX is used
+
+The AM_CONDITIONAL at the end of LIBCURL_CHECK_CONFIG checks
+_libcurl_with = yes, but _libcurl_with is set to the prefix path
+when --with-libcurl=PREFIX is passed, causing WITH_CURL to always
+evaluate as false when a prefix is specified.
+
+Fix by checking with_libcurl != no instead, which correctly handles
+both --with-libcurl and --with-libcurl=PREFIX.
+---
+ auxdir/x_ac_curl.m4 | 2 +-
+ configure           | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/auxdir/x_ac_curl.m4 b/auxdir/x_ac_curl.m4
+index 02f598c022..bee9d76ac2 100644
+--- a/auxdir/x_ac_curl.m4
++++ b/auxdir/x_ac_curl.m4
+@@ -274,7 +274,7 @@ if (x) {;}
+      fi
+   fi
+ 
+-  AM_CONDITIONAL(WITH_CURL, test x$_libcurl_with = xyes && test x$libcurl_cv_lib_curl_usable = xyes)
++  AM_CONDITIONAL(WITH_CURL, test x$with_libcurl != xno && test x$libcurl_cv_lib_curl_usable = xyes)
+ 
+   unset _libcurl_with
+ ])dnl
+diff --git a/configure b/configure
+index b1db2ae1ca..77f5c52c64 100755
+--- a/configure
++++ b/configure
+@@ -30382,7 +30382,7 @@ printf "%s\n" "$as_me: WARNING: unable to locate/link against libcurl-devel inst
+      fi
+   fi
+ 
+-   if test x$_libcurl_with = xyes && test x$libcurl_cv_lib_curl_usable = xyes; then
++   if test x$with_libcurl != xno && test x$libcurl_cv_lib_curl_usable = xyes; then
+   WITH_CURL_TRUE=
+   WITH_CURL_FALSE='#'
+ else
+-- 
+2.53.0
+

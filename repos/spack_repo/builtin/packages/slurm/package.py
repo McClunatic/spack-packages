@@ -116,6 +116,10 @@ class Slurm(AutotoolsPackage):
     depends_on("rocm-smi-lib", when="+rsmi")
     depends_on("lua", when="+lua")
 
+    # Fix AM_CONDITIONAL failures with libcurl that prevent some
+    # plugins (e.g., jobcomp/elasticsearch) from building.
+    patch("fix-AM_CONDITIONAL-WITH_CURL-fails-when-with-libcurl.patch")
+
     executables = ["^srun$", "^salloc$"]
 
     @classmethod
